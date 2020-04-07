@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+  <head>
+    <title>My Chat App</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; background: #d3d3d336;}
+      h1 {align-self: center; }
+        div{
+            margin: 0 auto;
+            width: 80%;
+        }
+      form { padding: 3px; position: fixed; bottom: 5%; width: 80%; border: 2px solid #4a0b71;}
+      form input { border: thick; padding: 10px; width: 100%; height: 60px;}
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; padding: 0; margin-top: 20%;}
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+        
+        #members { list-style-type: none; margin: 0; padding: 0;}
+      #members li { padding: 5px 10px; }
+      #members li:nth-child(odd) { background: #eee; }
+      #online{position: fixed;
+          margin-top: 0;
+            right: 0;
+          width: 20%;
+          height: 90%;
+          border: 2px solid #4a0b71;
+      }
+      .fixed-top {
+          margin: auto;
+    position: fixed;
+    top: 0em;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+    width: 80%;
+    height: 10%;
+    background-image: linear-gradient(#3a1767, rgb(221, 130, 255));  
+    color: white;
+    font-weight: bold;
+    font-size: x-large;
+    text-align: center;
+    padding-top: 2%;
+}
+        .fixed-bottom {
+          margin: auto;
+    position: fixed;
+    bottom: 0em;
+    z-index: 1030;
+    width: 80%;
+    height: 5%;
+    background-image: linear-gradient(#3a1767, rgb(221, 130, 255));  
+    color: white;
+    font-weight: bold;
+    font-size: x-large;
+    text-align: center;
+    
+}
+    </style>
+  </head>
+  <body>
+      <div class ="fixed-top">Chat-App</div>
+      <div>
+      <p id="typing" style="margin-top: 15%;"></p>
+    <ul id="messages"></ul>
+          </div>
+    <!--<div id="online"><ul id="members"></ul></div> --> 
+      <div>
+    <form action="">
+      <input id="msg" align="middle" autocomplete="off" placeholder="Start typing your message..."/>
+    </form>
+          <div class ="fixed-bottom"></div>
+          </div>
+      
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+        var socket = io();
+        $(function () {
+            
+            $('form').submit(function(e){
+            e.preventDefault(); // prevents page reloading
+                console.log($('#msg').val());
+            socket.emit('chat message', $('#msg').val());
+            $('#msg').val('');
+            return false;
+            });
+            
+            $('#msg').bind("keypress", () => {
+                     socket.emit("typing");
+            });
+            
+            $('#msg').bind("keyup", () => {
+                     socket.emit("typingdone");
+            });
+            
+            socket.on('is_online', function(username) {
+                $('#messages').append($('<li>').html(username));
+            });
+
+            socket.on('chat message', function(msg){
+                $('#messages').append($('<li>').html(msg));
+            });
+            
+            socket.on('typing', function(msg){
+                $('#typing').html(msg);
+            });
+            socket.on('typingdone', function(msg){
+                $('#typing').html('');
+            });
+        });
+        
+        (function enterUserName(){
+                var username = prompt('Please tell me your name');
+               
+                if(username !== null && username !== ''){
+                    socket.emit('username', username);
+                }
+            else{
+                alert("Please enter User Name to proceed!")
+                enterUserName();
+            }
+        })();
+        
+
+    </script>
+  </body>
+</html>
